@@ -1,0 +1,12 @@
+def hello():
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
+    print("I will stop writing boilerplate code.")
