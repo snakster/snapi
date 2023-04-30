@@ -4,8 +4,6 @@ from collections.abc import Callable
 import os
 import yaml
 
-from os.path import join, exists, getmtime
-
 from . import template
 
 
