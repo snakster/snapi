@@ -1,0 +1,16 @@
+#pragma once
+
+#include "../{{ module.name }}.h"
+
+namespace {{ module.name }} {
+
+class {{ service.name }}_impl : public {{ service.name }}
+{
+public:
+    {% for fn in service.functions %}
+    {{fn.return_type}} {{fn.name}}({{fn.arg_decls}}) override;
+        
+    {% endfor %}
+};
+
+} // namespace {{ module.name }}

@@ -1,0 +1,17 @@
+#include "{{ service.impl_name }}.h"
+
+namespace {{ module.name }} {
+
+{% for fun in service.functions %}
+{{fun.return_type}} {{service.name}}::{{fun.name}}({{fun.arg_decls}})
+{
+    {% section fun.name + "_impl" %}
+    //
+    // TODO: Implement
+    //
+    {% endsection %}
+
+}
+    
+{% endfor %}
+} // namespace {{ module.name }}

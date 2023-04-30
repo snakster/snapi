@@ -1,0 +1,24 @@
+services:
+  - name: values
+    functions:
+      - name: put
+        args:
+          - key: string
+          - value: string
+
+      - name: get
+        args:
+          - key: string
+        returns: string
+
+  - name: files
+    functions:
+      - name: upload
+        args:
+          - local_path: string
+          - remote_path: string
+
+      - name: download
+        args:
+          - remote_path: string
+          - local_path: string

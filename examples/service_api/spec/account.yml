@@ -1,0 +1,9 @@
+services:
+  - name: tokens
+    functions:
+      - name: create
+        returns: string
+
+      - name: revoke
+        args:
+          - token: string
