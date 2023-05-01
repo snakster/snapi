@@ -1,10 +1,14 @@
 # snapi 
 
-snapi (/sneɪ.piˈaɪ/) is a simple yet flexible code generation framework. It uses Python, but can generate code for any language - or any text in general.
+snapi (/sneɪ.piˈaɪ/) is a simple yet flexible code generation framework. It uses Python, but can generate code for any programming language - or any text in general.
 
 ### Why?
 
-TODO
+Here are some scenarios where an abstract API definition + code generation might be a good idea:
+* Function declarations that are repeated multiple times, i.e. for interface, implementation, testing mocks, ...
+* Boilerplate wrappers that forward or convert between layers of an architecture
+* SDKs for multiple programming languages using the same general API
+* Semantic checks on API changes that require an easy to parse definition, i.e. to programmatically test for backward compatibility
 
 ### Installation
 
@@ -15,23 +19,28 @@ pip install snapi
 
 [For usage in a container, see here.](todo)
 
-## Quick example
+## A brief example
 
 ### 1. Design your API model in YAML/JSON
 API specification (YAML):
 ```YAML
 services:
-  - name: database
+  - name: files
     functions:
-      - name: put
+      - name: upload
         args:
-          - key: string
-          - value: string
+          - local_path: string
+          - remote_path: string
 
-      - name: get
+      - name: download
         args:
-          - key: string
-        returns: string
+          - remote_path: string
+          - local_path: string
+
+      - name: list_dir
+        args:
+          - remote_path: string = "/"
+        returns: list<string>
 ```
 
 ### 2. Create templates using Jinja markup
@@ -39,7 +48,7 @@ services:
 Python template:
 ```Python
 {% for fn in functions %}
-def {{fn.name}}({{fn.arg_decls}}) -> {{fn.return_type}}:
+def {{fn.name}}({{fn.args | format_py_args}}) -> {{fn.return_type}}:
   {% section fn.name + "_impl" %}
   # TODO: Implement.
   # Note: User code within a section is generally preserved between generator runs.
@@ -52,7 +61,7 @@ Go template:
 // TODO
 ```
 
-Templates might use a transformed input model that contains language-specific data.
+Templates can use a transformed input model that contains language-specific data.
 
 ### 3. Implement generator with snapi
 
