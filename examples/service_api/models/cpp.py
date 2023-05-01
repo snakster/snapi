@@ -3,6 +3,8 @@ from typing import Any, Dict, List
 from dataclasses import dataclass, field
 import os
 
+import snapi.naming
+
 @dataclass
 class Function:
     name: str
@@ -49,14 +51,20 @@ def parse_service(service_spec) -> Service:
 def parse_function(function_spec) -> Function:
     return Function(
         name = function_spec["name"],
-        return_type = map_type(function_spec.get("returns", "void"))
+        return_type = convert_type(function_spec.get("returns", "void"))
     )
 
+
 TYPE_MAP = {
-    "string": "std::string"
+    "string": "std::string",
+    "list": "std::vector"
 }
 
 def map_type(s: str) -> str:
     if s in TYPE_MAP:
         return TYPE_MAP[s]
     return s
+
+def convert_type(s: str) -> str:
+    return snapi.naming.convert_type(s, mapper=map_type, delims=("<", ">"))
+
