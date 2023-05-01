@@ -10,10 +10,8 @@ class NestedType:
 
 
 class _TypeTokenScanner:
-    def __init__(self, s: str, delims: Tuple[str,str]):
-        self._tokens = _tokenize_type_decl(s, delims)
-        self.left_delim = delims[0]
-        self.right_delim = delims[1]
+    def __init__(self, s: str):
+        self._tokens = _tokenize_type_decl(s)
         self.cur = next(self._tokens)
         self.next = next(self._tokens)
 
@@ -24,14 +22,14 @@ class _TypeTokenScanner:
             self.next = next(self._tokens)
 
 
-def parse_type(s: str, delims: Tuple[str,str]) -> Union[str, NestedType]:
-    return _parse_type_expr(_TypeTokenScanner(s, delims))
+def parse_type(s: str) -> Union[str, NestedType]:
+    return _parse_type_expr(_TypeTokenScanner(s))
 
 
 def _parse_type_expr(scanner: _TypeTokenScanner):
     name = scanner.cur
 
-    if scanner.next != scanner.left_delim:
+    if scanner.next != "<":
         return name
     scanner.forward(2)    
 
@@ -44,16 +42,16 @@ def _parse_type_expr(scanner: _TypeTokenScanner):
 
         nested.append(_parse_type_expr(scanner))
     
-    if scanner.next != scanner.right_delim:
-        raise Exception(f"expected '{scanner.right_delim}'")
+    if scanner.next != ">":
+        raise Exception("expected '>'")
     scanner.forward()
 
     return NestedType(name=name, nested=nested)
 
 
-def _tokenize_type_decl(s: str, delims: Tuple[str,str]):
+def _tokenize_type_decl(s: str):
     while True:
-        separators = [*delims] + [","]
+        separators = ["<", ">", ","]
         tok = _parse_next_token(s, separators)
         yield tok
         s = s[len(tok):]
@@ -71,10 +69,12 @@ def _parse_next_token(s: str, separators: List[str]) -> str:
     return m.group()
             
 
-def convert_type(s: str, mapper, delims: Tuple[str,str,str,str]) -> str:
-    if len(delims) == 2:
-        delims = delims + delims
-    return _convert_type_impl(parse_type(s, delims[0:2]), mapper, delims[2:4])
+def convert_type(s: str, mapper, delims: Tuple[str,str]) -> str:
+    if isinstance(mapper, dict):
+        type_map = mapper
+        mapper = lambda x : type_map.get(x, x)
+
+    return _convert_type_impl(parse_type(s), mapper, delims)
 
 
 def _convert_type_impl(t: Union[str, NestedType], mapper, delims) -> str:
