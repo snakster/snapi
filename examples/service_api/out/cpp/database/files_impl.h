@@ -11,6 +11,8 @@ public:
         
     void download() override;
         
+    std::vector<std::string> list_dir() override;
+        
 };
 
 } // namespace database

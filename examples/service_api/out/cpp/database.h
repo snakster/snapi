@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace database {
 
@@ -19,6 +20,8 @@ public:
     virtual void upload() = 0;
         
     virtual void download() = 0;
+        
+    virtual std::vector<std::string> list_dir() = 0;
         
 };
 

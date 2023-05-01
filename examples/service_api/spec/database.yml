@@ -22,3 +22,8 @@ services:
         args:
           - remote_path: string
           - local_path: string
+
+      - name: list_dir
+        args:
+          - remote_path: string
+        returns: list<string>
