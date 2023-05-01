@@ -79,8 +79,8 @@ def convert_type(s: str, mapper, delims: Tuple[str,str,str,str]) -> str:
 
 def _convert_type_impl(t: Union[str, NestedType], mapper, delims) -> str:
     if isinstance(t, str):
-        return t
+        return mapper(t)
     elif isinstance(t, NestedType):
-        return t.name + delims[0] \
+        return mapper(t.name) + delims[0] \
             + ",".join([_convert_type_impl(inner, mapper, delims) for inner in t.nested]) \
             + delims[1]
