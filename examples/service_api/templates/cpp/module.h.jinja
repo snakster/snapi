@@ -10,7 +10,7 @@ class {{ service.name }}
 {
 public:
     {% for fn in service.functions %}
-    virtual {{fn.return_type}} {{fn.name}}({{fn.arg_decls}}) = 0;
+    virtual {{fn.return_type}} {{fn.name}}({{fn.args | cpp_args_as_str_with_defaults}}) = 0;
         
     {% endfor %}
 };

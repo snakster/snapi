@@ -11,7 +11,7 @@ std::string tokens::create()
     //$section:create_impl
 }
     
-void tokens::revoke()
+void tokens::revoke(std::string token)
 {
     //$section:revoke_impl
     //

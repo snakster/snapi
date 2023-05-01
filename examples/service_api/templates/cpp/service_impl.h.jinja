@@ -8,7 +8,7 @@ class {{ service.name }}_impl : public {{ service.name }}
 {
 public:
     {% for fn in service.functions %}
-    {{fn.return_type}} {{fn.name}}({{fn.arg_decls}}) override;
+    {{fn.return_type}} {{fn.name}}({{fn.args | cpp_args_as_str}}) override;
         
     {% endfor %}
 };

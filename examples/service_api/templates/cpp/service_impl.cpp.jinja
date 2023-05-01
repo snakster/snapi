@@ -2,10 +2,10 @@
 
 namespace {{ module.name }} {
 
-{% for fun in service.functions %}
-{{fun.return_type}} {{service.name}}::{{fun.name}}({{fun.arg_decls}})
+{% for fn in service.functions %}
+{{fn.return_type}} {{service.name}}::{{fn.name}}({{fn.args | cpp_args_as_str}})
 {
-    {% section fun.name + "_impl" %}
+    {% section fn.name + "_impl" %}
     //
     // TODO: Implement
     //

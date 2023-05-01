@@ -10,7 +10,7 @@ class tokens
 public:
     virtual std::string create() = 0;
         
-    virtual void revoke() = 0;
+    virtual void revoke(std::string token) = 0;
         
 };
 

@@ -7,9 +7,9 @@ namespace database {
 class values_impl : public values
 {
 public:
-    void put() override;
+    void put(std::string key, std::string value) override;
         
-    std::string get() override;
+    std::string get(std::string key) override;
         
 };
 

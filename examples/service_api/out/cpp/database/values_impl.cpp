@@ -2,7 +2,7 @@
 
 namespace database {
 
-void values::put()
+void values::put(std::string key, std::string value)
 {
     //$section:put_impl
     //
@@ -11,7 +11,7 @@ void values::put()
     //$section:put_impl
 }
     
-std::string values::get()
+std::string values::get(std::string key)
 {
     //$section:get_impl
     //
