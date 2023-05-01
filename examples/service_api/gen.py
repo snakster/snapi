@@ -8,7 +8,12 @@ import models.cpp
 
 
 def main():
-    g = snapi.Generator()
+    g = snapi.Generator(
+        filters={
+            "cpp_args_as_str": models.cpp.args_as_str,
+            "cpp_args_as_str_with_defaults": models.cpp.args_as_str_with_defaults,
+        }
+    )
 
     g.add_inputs(
         name="api_spec",
@@ -68,14 +73,12 @@ def write_cpp_outputs(outputs: snapi.Outputs, data: List[models.cpp.Module], out
                     "module": module_data
                 }
             )
-
             outputs.to_file(
                 service_path_prefix + ".cpp",
                 template=f"{tpl_dir}/service_impl.cpp.jinja",
                 data={
                     "service": service_data,
                     "module": module_data
-                    
                 }
             )
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from dataclasses import dataclass, field
 import os
@@ -6,9 +6,16 @@ import os
 import snapi.naming
 
 @dataclass
+class FunctionArg:
+    name: str
+    type: str
+    default: Optional[str]
+
+@dataclass
 class Function:
     name: str
     return_type: str
+    args: List[FunctionArg]
 
 @dataclass
 class Service:
@@ -51,7 +58,25 @@ def parse_service(service_spec) -> Service:
 def parse_function(function_spec) -> Function:
     return Function(
         name = function_spec["name"],
-        return_type = convert_type(function_spec.get("returns", "void"))
+        return_type = convert_type(function_spec.get("returns", "void")),
+        args = [parse_function_arg(s) for s in function_spec.get("args", [])]
+    )
+
+def parse_function_arg(arg_spec: Dict[str,str]) -> FunctionArg:
+    name, type_and_default = next(iter(arg_spec.items()))
+
+    parts = type_and_default.split("=", 1)
+    type_spec = parts[0].strip()
+
+    if len(parts) == 2:
+        default = parts[1].strip()
+    else:
+        default = None
+
+    return FunctionArg(
+        name = name,
+        type = convert_type(type_spec),
+        default = default
     )
 
 
@@ -60,11 +85,20 @@ TYPE_MAP = {
     "list": "std::vector"
 }
 
-def map_type(s: str) -> str:
-    if s in TYPE_MAP:
-        return TYPE_MAP[s]
-    return s
-
 def convert_type(s: str) -> str:
-    return snapi.naming.convert_type(s, mapper=map_type, delims=("<", ">"))
+    return snapi.naming.convert_type(s, mapper=TYPE_MAP, delims=("<", ">"))
+
+
+def args_as_str(args: List[FunctionArg]):
+    return ", ".join([f"{a.type} {a.name}" for a in args])
+
+
+def args_as_str_with_defaults(args: List[FunctionArg]):
+    r = []
+    for a in args:
+        if a.default is not None:
+            r.append(f"{a.type} {a.name} = {a.default}")
+        else:
+            r.append(f"{a.type} {a.name}")
+    return ", ".join(r)
 
