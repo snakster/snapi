@@ -46,7 +46,7 @@ class SectionExtension(Extension):
         return indent + marker + '\n' + rv + indent + marker
 
 
-def make_new_env(delim):
+def make_new_env(delim, filters):
     env = Environment(
         loader=FunctionLoader(load_template),
         extensions=[SectionExtension],
@@ -58,6 +58,9 @@ def make_new_env(delim):
     if delim == None:
         delim = default_section_delim
     env.section_delim_selector=delim
+
+    if filters is not None:
+        env.filters.update(filters)
 
     return env
 

@@ -9,12 +9,12 @@ from . import template
 
 class Generator:
 
-    def __init__(self, section_delim = None):
+    def __init__(self, section_delim = None, filters = None):
         self._input_decls = {}
         self._transformer_decls = {}
         self._output_decls = {}
 
-        self._template_env = template.make_new_env(section_delim)
+        self._template_env = template.make_new_env(section_delim, filters)
 
 
     def add_inputs(self, name: str, impl: Callable[..., None], args = {}):
