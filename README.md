@@ -14,7 +14,8 @@ Here are some scenarios where an abstract API definition + code generation might
 
 With [pip](https://pip.pypa.io/en/stable/getting-started/):
 ```
-pip install snapi
+$ cd pkg
+$ pip install .
 ```
 
 [For usage in a container, see here.](todo)
