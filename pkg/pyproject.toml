@@ -21,7 +21,8 @@ classifiers = [
 dependencies = [
     "pyyaml",
     "Jinja2",
-    "inflection"
+    "inflection",
+    "rich"
 ]
 
 [project.urls]

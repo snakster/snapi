@@ -1,10 +1,26 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from collections.abc import Callable
+
+from dataclasses import dataclass
 
 import os
 import yaml
+import json
+
+from rich import print
 
 from . import template
+
+
+class GeneratorError(Exception):
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        super().__init__(message)
+
+
+    @property
+    def message(self) -> Optional[str]:
+        return self.args[0] if self.args else None
 
 
 class Generator:
@@ -25,6 +41,9 @@ class Generator:
 
 
     def add_transformer(self, name: str, inputs: str, impl: Callable[..., None], args = {}):
+        if inputs not in self._input_decls:
+            raise GeneratorError(f"undefined inputs '{inputs}'")
+
         self._transformer_decls[name] = {
             "inputs": inputs,
             "impl": impl,
@@ -33,6 +52,9 @@ class Generator:
 
 
     def add_outputs(self, name: str, data: str, impl: Callable[..., None], args = {}):
+        if data not in self._transformer_decls:
+            raise GeneratorError(f"undefined transformer '{data}'")
+        
         self._output_decls[name] = {
             "data": data,
             "impl": impl,
@@ -44,27 +66,45 @@ class Generator:
         in_cache = {}
         tr_cache = {}
 
+        if len(self._input_decls) == 0:
+            raise GeneratorError("no inputs defined")
+        
+        if len(self._transformer_decls) == 0:
+            raise GeneratorError("no transformers defined")
+        
+        if len(self._output_decls) == 0:
+            raise GeneratorError("no outputs defined")
+
         def process_in_decl(decl):
+            
             impl = decl["impl"]
             args = decl["args"]
 
             inputs = Inputs()
             impl(inputs, **args)
-            return inputs._data
+            return inputs._data, inputs._stats
+        
+        print(f":small_blue_diamond: Inputs ...")
 
         for name, decl in self._input_decls.items():
             if not name in in_cache:
-                in_cache[name] = process_in_decl(decl)
+                in_cache[name], stats = process_in_decl(decl)
+                print(f"   - [bold]{name}[/bold]: [green]{stats.read_file_count}[/green] read")
+                
 
         def process_tr_decl(decl):
             impl = decl["impl"]
             args = decl["args"]
+            
             data = in_cache[decl["inputs"]]
             return impl(data, **args)
+
+        print(f":small_blue_diamond: Transformers ...")
 
         for name, decl in self._transformer_decls.items():
             if not name in tr_cache:
                 tr_cache[name] = process_tr_decl(decl)
+                print(f"   - [bold]{name}[/bold]")
 
         def process_out_decl(decl):
             impl = decl["impl"]
@@ -73,17 +113,27 @@ class Generator:
 
             outputs = Outputs(self._template_env)
             impl(outputs, data, **args)
+            return outputs._stats
+
+        print(f":small_blue_diamond: Outputs ...")
 
         for name, decl in self._output_decls.items():
-            process_out_decl(decl)
+            stats = process_out_decl(decl)
+            print(f"   - [bold]{name}[/bold]: [green]{stats.written_file_count}[/green] written")
 
 
 class Inputs:
+    @dataclass
+    class Stats:
+        read_file_count: int = 0
+
     def __init__(self):
         self._data = {}
+        self._stats = self.Stats()
 
     def from_file(self, path: str):
         self._data[path] = read_input_file(path)
+        self._stats.read_file_count += 1
 
 
 def read_input_file(path: str) -> Any:
@@ -98,8 +148,15 @@ def read_input_file(path: str) -> Any:
 
 
 class Outputs:
+    
+    @dataclass
+    class Stats:
+        written_file_count: int = 0
+
+
     def __init__(self, env):
         self._env = env
+        self._stats = self.Stats()
 
     def to_file(self, path: str, template: str, data: Any):
         write_output_file(self._env,
@@ -107,6 +164,7 @@ class Outputs:
             output_path=path,
             data=data
         )
+        self._stats.written_file_count += 1
 
 
 def write_output_file(env, template_path: str, output_path: str, data: Any):
