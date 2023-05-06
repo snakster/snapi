@@ -1,0 +1,14 @@
+version: '3'
+  
+includes:
+  snapi:
+    taskfile: ../../Taskfile.yml
+    dir: ../..
+
+tasks:
+  run:
+    cmds:
+      - task: snapi:build-snapi-lib-image
+      - cmd: >
+          docker run -it --rm -v $(pwd):/app snapi
+          python gen.py
