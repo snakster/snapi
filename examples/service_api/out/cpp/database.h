@@ -21,7 +21,7 @@ public:
         
     virtual void download(std::string remote_path, std::string local_path) = 0;
         
-    virtual std::vector<std::string> list_dir(std::string remote_path = ".") = 0;
+    virtual std::vector<std::string> list_dir(std::string remote_path = "/") = 0;
         
 };
 
