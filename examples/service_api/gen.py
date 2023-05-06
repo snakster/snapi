@@ -10,8 +10,8 @@ import models.cpp
 def main():
     g = snapi.Generator(
         filters={
-            "cpp_args_as_str": models.cpp.args_as_str,
-            "cpp_args_as_str_with_defaults": models.cpp.args_as_str_with_defaults,
+            "cpp_fmt_args": models.cpp.fmt_args,
+            "cpp_fmt_args_defaults": models.cpp.fmt_args_defaults,
         }
     )
 

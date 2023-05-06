@@ -3,7 +3,7 @@
 namespace {{ module.name }} {
 
 {% for fn in service.functions %}
-{{fn.return_type}} {{service.name}}::{{fn.name}}({{fn.args | cpp_args_as_str}})
+{{fn.return_type}} {{service.name}}::{{fn.name}}({{fn.args | cpp_fmt_args}})
 {
     {% section fn.name + "_impl" %}
     //

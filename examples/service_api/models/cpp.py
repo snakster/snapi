@@ -89,11 +89,11 @@ def convert_type(s: str) -> str:
     return snapi.naming.convert_type(s, mapper=TYPE_MAP, delims=("<", ">"))
 
 
-def args_as_str(args: List[FunctionArg]):
+def fmt_args(args: List[FunctionArg]) -> str:
     return ", ".join([f"{a.type} {a.name}" for a in args])
 
 
-def args_as_str_with_defaults(args: List[FunctionArg]):
+def fmt_args_defaults(args: List[FunctionArg]) -> str:
     r = []
     for a in args:
         if a.default is not None:
