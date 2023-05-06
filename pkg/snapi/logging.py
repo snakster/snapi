@@ -15,12 +15,12 @@ class Logger:
         print(f"  [bold]\[{self._cur_scope}][/bold] {s}")
     
     
-    def warning(self, s: str):
-        print(f"  [bold yellow]\[{self._cur_scope}][/bold yellow]) {s}")
+    def warn(self, s: str):
+        print(f"  [bold yellow]\[{self._cur_scope}][/bold yellow] {s}")
         
 
     def error(self, s: str):
-        print(f"  [bold red]\[{self._cur_scope}][/bold red]) {s}")
+        print(f"  [bold red]\[{self._cur_scope}][/bold red] {s}")
 
 
 class Scope:
