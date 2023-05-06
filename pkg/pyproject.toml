@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "snapi"
 version = "0.0.1"
 authors = [
-  { name="Sebastian Jeckel", email="jeckel.sebastian@gmail.com" },
+    { name="Sebastian Jeckel", email="jeckel.sebastian@gmail.com" },
 ]
 description = "A simple and flexible code generation framework."
 readme = "../README.md"
@@ -17,7 +17,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-
 dependencies = [
     "pyyaml",
     "Jinja2",
@@ -28,3 +27,6 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/snakster/snapi"
 "Bug Tracker" = "https://github.com/snakster/snapi/issues"
+
+[project.optional-dependencies]
+dev = ["pytest"]
