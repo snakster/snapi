@@ -6,8 +6,7 @@ from dataclasses import dataclass
 import os
 import yaml
 import json
-
-from rich import print
+import time
 
 from . import logging, template
 from .errors import GeneratorError
@@ -15,7 +14,14 @@ from .errors import GeneratorError
 
 class Generator:
 
-    def __init__(self, section_delim = None, filters = None):
+    def __init__(
+        self,
+        section_delim = None,
+        save_orphan_sections = True,
+        filters = None
+    ):
+        self.save_orphan_sections = save_orphan_sections
+
         self._input_decls = {}
         self._transformer_decls = {}
         self._output_decls = {}
@@ -72,7 +78,7 @@ class Generator:
             impl = decl["impl"]
             args = decl["args"]
 
-            inputs = Inputs()
+            inputs = Inputs(self.log)
             impl(inputs, **args)
             return inputs._data, inputs._stats
         
@@ -104,7 +110,11 @@ class Generator:
             args = decl["args"]
             data = tr_cache[decl["data"]]
 
-            outputs = Outputs(self._template_env)
+            outputs = Outputs(
+                log=self.log,
+                env=self._template_env,
+                with_save_orphans=self.save_orphan_sections
+            )
             impl(outputs, data, **args)
             return outputs._stats
 
@@ -121,9 +131,12 @@ class Inputs:
     class Stats:
         read_file_count: int = 0
 
-    def __init__(self):
+
+    def __init__(self, log: logging.Logger):
+        self.log = log
         self._data = {}
         self._stats = self.Stats()
+
 
     def from_file(self, path: str):
         self._data[path] = read_input_file(path)
@@ -148,12 +161,15 @@ class Outputs:
         written_file_count: int = 0
 
 
-    def __init__(self, env):
+    def __init__(self, log: logging.Logger, with_save_orphans: bool, env):
+        self.log = log
+        self._with_save_orphans = with_save_orphans
         self._env = env
         self._stats = self.Stats()
 
+
     def to_file(self, path: str, template: str, data: Any):
-        write_output_file(self._env,
+        self._write_output_file(
             template_path=template,
             output_path=path,
             data=data
@@ -161,14 +177,43 @@ class Outputs:
         self._stats.written_file_count += 1
 
 
-def write_output_file(env, template_path: str, output_path: str, data: Any):
-    env.section_output_path = output_path
-    env.section_data = None
+    def _write_output_file(self, template_path: str, output_path: str, data: Any):
+        self._env.section_output_path = output_path
+        self._env.section_data = None
 
-    tpl = env.get_template(template_path)
-    s = tpl.render(data)
+        tpl = self._env.get_template(template_path)
+        s = tpl.render(data)
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        if self._with_save_orphans:
+            self._save_orphaned_sections(output_path)
 
-    with open(output_path, 'w') as f:
-        f.write(s)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        with open(output_path, 'w') as f:
+            f.write(s)
+
+
+    def _save_orphaned_sections(self, output_path: str):
+        if self._env.section_data is None:
+            return
+        
+        orphan_count = 0
+
+        for name, data in self._env.section_data.items():
+            if not data.referenced:
+                orphan_count += 1
+
+        if orphan_count == 0:
+            return
+        
+        cur_time = int(time.time()) 
+        fn = f"{output_path}.{cur_time}.orphan"
+
+        with open(fn, 'w') as f:
+            for name, data in self._env.section_data.items():
+                if not data.referenced:
+                    f.write(f"BEGIN SECTION {name}\n")
+                    f.write(data.content)
+                    f.write(f"END SECTION {name}\n\n")
+
+        self.log.warn(f"Saved orphaned sections from '{output_path}' to '{fn}'")

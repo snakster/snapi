@@ -2,10 +2,10 @@ import os
 
 from typing import Any, Dict
 
+from dataclasses import dataclass
+
 from jinja2 import Environment, FunctionLoader, select_autoescape, TemplateNotFound, nodes
 from jinja2.ext import Extension
-
-from os.path import join, exists, getmtime
 
 
 class SectionExtension(Extension):
@@ -36,14 +36,17 @@ class SectionExtension(Extension):
         if self.environment.section_data == None:
             self.environment.section_data = load_section_data(output_path, delim)
         
-        rv = self.environment.section_data.get(name)
-        if rv == None:
-            rv = caller()
+        sd = self.environment.section_data.get(name)
+        if sd == None:
+            content = caller()
+        else:
+            content = sd.content
+            sd.referenced = True
 
-        indent = get_indent(rv)
+        indent = get_indent(content)
         marker = delim + name
 
-        return indent + marker + '\n' + rv + indent + marker
+        return indent + marker + '\n' + content + indent + marker
 
 
 def make_new_env(delim, filters):
@@ -73,17 +76,23 @@ def default_section_delim(fn: str) -> str:
 
 
 def load_template(path):
-    if not exists(path):
+    if not os.path.exists(path):
         raise TemplateNotFound(path)
 
-    mtime = getmtime(path)
+    mtime = os.path.getmtime(path)
     with open(path) as f:
         source = f.read()
 
-    return source, path, lambda: mtime == getmtime(path)
+    return source, path, lambda: mtime == os.path.getmtime(path)
 
 
-def load_section_data(path: str, delim: str) -> Dict[str,str]:
+@dataclass
+class SectionData:
+    content: str
+    referenced: bool
+
+
+def load_section_data(path: str, delim: str) -> Dict[str,SectionData]:
     data = {}
 
     try:
@@ -114,7 +123,8 @@ def load_section_data(path: str, delim: str) -> Dict[str,str]:
                     if section_name != s[delim_idx+len(delim):].strip():
                         break
 
-                    data[section_name] = buf
+                    data[section_name] = SectionData(content=buf, referenced=False)
+                    break
     except IOError:
         pass
     
