@@ -9,18 +9,8 @@ import json
 
 from rich import print
 
-from . import template
-
-
-class GeneratorError(Exception):
-
-    def __init__(self, message: Optional[str] = None) -> None:
-        super().__init__(message)
-
-
-    @property
-    def message(self) -> Optional[str]:
-        return self.args[0] if self.args else None
+from . import logging, template
+from .errors import GeneratorError
 
 
 class Generator:
@@ -31,6 +21,8 @@ class Generator:
         self._output_decls = {}
 
         self._template_env = template.make_new_env(section_delim, filters)
+
+        self.log = logging.Logger()
 
 
     def add_inputs(self, name: str, impl: Callable[..., None], args = {}):
@@ -84,13 +76,13 @@ class Generator:
             impl(inputs, **args)
             return inputs._data, inputs._stats
         
-        print(f":small_blue_diamond: Inputs ...")
+        self.log.step(f"Inputs")
 
         for name, decl in self._input_decls.items():
             if not name in in_cache:
-                in_cache[name], stats = process_in_decl(decl)
-                print(f"   - [bold]{name}[/bold]: [green]{stats.read_file_count}[/green] read")
-                
+                with logging.Scope(self.log, name):
+                    in_cache[name], stats = process_in_decl(decl)
+                    self.log.info(f"[green]{stats.read_file_count}[/green] read")
 
         def process_tr_decl(decl):
             impl = decl["impl"]
@@ -99,12 +91,13 @@ class Generator:
             data = in_cache[decl["inputs"]]
             return impl(data, **args)
 
-        print(f":small_blue_diamond: Transformers ...")
+        self.log.step(f"Transformers")
 
         for name, decl in self._transformer_decls.items():
             if not name in tr_cache:
-                tr_cache[name] = process_tr_decl(decl)
-                print(f"   - [bold]{name}[/bold]")
+                with logging.Scope(self.log, name):
+                    tr_cache[name] = process_tr_decl(decl)
+                    self.log.info(f"done")
 
         def process_out_decl(decl):
             impl = decl["impl"]
@@ -115,11 +108,12 @@ class Generator:
             impl(outputs, data, **args)
             return outputs._stats
 
-        print(f":small_blue_diamond: Outputs ...")
+        self.log.step(f"Outputs")
 
         for name, decl in self._output_decls.items():
-            stats = process_out_decl(decl)
-            print(f"   - [bold]{name}[/bold]: [green]{stats.written_file_count}[/green] written")
+            with logging.Scope(self.log, name):
+                stats = process_out_decl(decl)
+                self.log.info(f"[green]{stats.written_file_count}[/green] written")
 
 
 class Inputs:
