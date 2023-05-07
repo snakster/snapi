@@ -150,5 +150,5 @@ For C++, there might be multiple header and source files with an entirely differ
 In general, conditionals, loops and other constructs would be required, so expressing this in Python code is the approach we prefer.
 
 That being said, the goal is to make implementing a code generator as easy as possible.
-Eventually this could mean including reusable components for common input schemas and template data models for common programming language.
-All that would be left for the user is writing YAML specs, templates and mapping logic.
+Eventually, this could mean including reusable components for common input schemas and template data models for common programming languages.
+All that would be left to the user is writing YAML specs, templates and mapping logic.
