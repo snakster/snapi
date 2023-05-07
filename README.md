@@ -10,6 +10,16 @@ Here are some scenarios where an abstract API definition + code generation might
 * SDKs for multiple programming languages using the same general API
 * Semantic checks on API changes that require an easy to parse definition, i.e. to programmatically test for backward compatibility
 
+### Development status
+
+This project is still work-in-progress. Current list of open tasks:
+- [x] Main features
+- [ ] Documentation
+- [x] Examples
+- [ ] Tests
+- [ ] CI pipeline
+- [ ] PyPI package
+
 ### Installation
 
 With [pip](https://pip.pypa.io/en/stable/getting-started/):
@@ -124,3 +134,21 @@ def write_py_outputs(outputs: snapi.Outputs, services: List[models.py.Service], 
       data={"service": service}
     )
 ```
+
+## Design rationale
+
+#### Why not use gRPC/OpenAPI/Swagger/... instead?
+
+If there is an existing tool or framework that already meets your requirements w.r.t. to supported input schemas and targeted output code, it is probably more effective to use that.
+The role of this framework is to help you implement requirements for which no ready-to-use solution exists yet.
+
+#### Why require code instead of providing an approach that is fully declarative, i.e. rules defined in a YAML file to map inputs, templates and outputs.
+
+Especially when targeting different programming languages, such mappings may require more than just a simple set of rules.
+For Python, a single _module.yaml_ input might result in a single generated _<module>.py_.
+For C++, there might be multiple header and source files with an entirely different layout.
+In general, conditionals, loops and other constructs would be required, so expressing this in Python code is the approach we prefer.
+
+That being said, the goal is to make implementing a code generator as easy as possible.
+Eventually this could mean including reusable components for common input schemas and template data models for common programming language.
+All that would be left for the user is writing YAML specs, templates and mapping logic.
