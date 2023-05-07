@@ -1,6 +1,9 @@
+"""Internal templating utilities using and extending Jinja."""
+
 import os
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
+from collections.abc import Callable
 
 from dataclasses import dataclass
 
@@ -20,7 +23,8 @@ class SectionExtension(Extension):
             section_delim_selector=None
         )
 
-    def parse(self, parser):
+
+    def parse(self, parser) -> Any:
         lineno = next(parser.stream).lineno
         section_name = parser.parse_expression()
         body = parser.parse_statements(["name:endsection"], drop_needle=True)
@@ -29,7 +33,8 @@ class SectionExtension(Extension):
             self.call_method("_section_lookup", [section_name]), [], [], body
         ).set_lineno(lineno)
 
-    def _section_lookup(self, name, caller):
+
+    def _section_lookup(self, name, caller) -> str:
         output_path = self.environment.section_output_path 
         delim = self.environment.section_delim_selector(output_path)
 
@@ -49,7 +54,7 @@ class SectionExtension(Extension):
         return indent + marker + '\n' + content + indent + marker
 
 
-def make_new_env(delim, filters):
+def make_new_env(delim, filters) -> Environment:
     env = Environment(
         loader=FunctionLoader(load_template),
         extensions=[SectionExtension],
@@ -75,7 +80,7 @@ def default_section_delim(fn: str) -> str:
         return "//$section:"
 
 
-def load_template(path):
+def load_template(path: str) -> Tuple[str, str, Callable[[], bool]]:
     if not os.path.exists(path):
         raise TemplateNotFound(path)
 
@@ -131,7 +136,7 @@ def load_section_data(path: str, delim: str) -> Dict[str,SectionData]:
     return data
 
 
-def get_indent(s: str):
+def get_indent(s: str) -> str:
     for i in range(0, len(s)):
         if not s[i].isspace():
             return s[0:i]

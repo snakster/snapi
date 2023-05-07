@@ -1,10 +1,16 @@
+"""Utilities for common, naming-related text transformations."""
+
 from typing import Any, Dict, Union, List, Tuple
 from dataclasses import dataclass
 
 import re
 
+from .errors import GeneratorError
+
 @dataclass
 class NestedType:
+    """TODO"""
+
     name: str
     nested: List[Union[str, Any]]
 
@@ -23,7 +29,19 @@ class _TypeTokenScanner:
 
 
 def parse_type(s: str) -> Union[str, NestedType]:
+    """TODO"""
+    
     return _parse_type_expr(_TypeTokenScanner(s))
+
+
+def convert_type(s: str, mapper, delims: Tuple[str,str]) -> str:
+    """TODO"""
+
+    if isinstance(mapper, dict):
+        type_map = mapper
+        mapper = lambda x : type_map.get(x, x)
+
+    return _convert_type_impl(parse_type(s), mapper, delims)
 
 
 def _parse_type_expr(scanner: _TypeTokenScanner):
@@ -43,7 +61,7 @@ def _parse_type_expr(scanner: _TypeTokenScanner):
         nested.append(_parse_type_expr(scanner))
     
     if scanner.next != ">":
-        raise Exception("expected '>'")
+        raise GeneratorError("error parsing type expression; expected '>'")
     scanner.forward()
 
     return NestedType(name=name, nested=nested)
@@ -67,14 +85,6 @@ def _parse_next_token(s: str, separators: List[str]) -> str:
     if not m:
         return ""
     return m.group()
-            
-
-def convert_type(s: str, mapper, delims: Tuple[str,str]) -> str:
-    if isinstance(mapper, dict):
-        type_map = mapper
-        mapper = lambda x : type_map.get(x, x)
-
-    return _convert_type_impl(parse_type(s), mapper, delims)
 
 
 def _convert_type_impl(t: Union[str, NestedType], mapper, delims) -> str:

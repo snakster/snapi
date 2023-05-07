@@ -1,3 +1,5 @@
+"""The main generator class and supporting definitions."""
+
 from typing import Any, Dict, Optional
 from collections.abc import Callable
 
@@ -13,14 +15,15 @@ from .errors import GeneratorError
 
 
 class Generator:
+    """The main generator class."""
 
     def __init__(
         self,
         section_delim = None,
-        save_orphan_sections = True,
+        save_orphaned_sections = True,
         filters = None
     ):
-        self.save_orphan_sections = save_orphan_sections
+        self.save_orphaned_sections = save_orphaned_sections
 
         self._input_decls = {}
         self._transformer_decls = {}
@@ -31,14 +34,29 @@ class Generator:
         self.log = logging.Logger()
 
 
-    def add_inputs(self, name: str, impl: Callable[..., None], args = {}):
+    def add_inputs(
+        self,
+        name: str,
+        impl: Callable[..., None],
+        args = {}
+    ) -> None:
+        """Declare an input group."""
+
         self._input_decls[name] = {
             "impl": impl,
             "args": args
         }
 
 
-    def add_transformer(self, name: str, inputs: str, impl: Callable[..., None], args = {}):
+    def add_transformer(
+        self,
+        name: str,
+        inputs: str,
+        impl: Callable[..., None],
+        args = {}
+    ) -> None:
+        """Declare a transformer."""
+
         if inputs not in self._input_decls:
             raise GeneratorError(f"undefined inputs '{inputs}'")
 
@@ -49,7 +67,14 @@ class Generator:
         }
 
 
-    def add_outputs(self, name: str, data: str, impl: Callable[..., None], args = {}):
+    def add_outputs(
+        self,
+        name: str,
+        data: str,
+        impl: Callable[..., None], args = {}
+    ) -> None:
+        """Declare an output group."""
+
         if data not in self._transformer_decls:
             raise GeneratorError(f"undefined transformer '{data}'")
         
@@ -60,18 +85,20 @@ class Generator:
         }
 
 
-    def run(self):
+    def run(self) -> None:
+        """Run the generator with the previously declared inputs, transformers and outputs."""
+
         in_cache = {}
         tr_cache = {}
 
         if len(self._input_decls) == 0:
-            raise GeneratorError("no inputs defined")
+            raise GeneratorError("no inputs declared")
         
         if len(self._transformer_decls) == 0:
-            raise GeneratorError("no transformers defined")
+            raise GeneratorError("no transformers declared")
         
         if len(self._output_decls) == 0:
-            raise GeneratorError("no outputs defined")
+            raise GeneratorError("no outputs declared")
 
         def process_in_decl(decl):
             
@@ -113,7 +140,7 @@ class Generator:
             outputs = Outputs(
                 log=self.log,
                 env=self._template_env,
-                with_save_orphans=self.save_orphan_sections
+                with_save_orphans=self.save_orphaned_sections
             )
             impl(outputs, data, **args)
             return outputs._stats
@@ -127,6 +154,8 @@ class Generator:
 
 
 class Inputs:
+    """Context passed to input delegate functions."""
+
     @dataclass
     class Stats:
         read_file_count: int = 0
@@ -138,23 +167,25 @@ class Inputs:
         self._stats = self.Stats()
 
 
-    def from_file(self, path: str):
-        self._data[path] = read_input_file(path)
+    def from_file(self, path: str) -> None:
+        """TODO"""
+        self._data[path] = self._read_input_file(path)
         self._stats.read_file_count += 1
 
 
-def read_input_file(path: str) -> Any:
-    if path.endswith(".json"):
-        with open(path, 'r') as f:
-            return json.load(f)
-    elif path.endswith((".yaml", ".yml")):
-        with open(path, 'r') as f:
-            return yaml.safe_load(f)
-    else:
-        return None
+    def _read_input_file(self, path: str) -> Any:
+        if path.endswith(".json"):
+            with open(path, 'r') as f:
+                return json.load(f)
+        elif path.endswith((".yaml", ".yml")):
+            with open(path, 'r') as f:
+                return yaml.safe_load(f)
+        else:
+            return None
 
 
 class Outputs:
+    """Context passed to output delegate functions."""
     
     @dataclass
     class Stats:
@@ -168,7 +199,9 @@ class Outputs:
         self._stats = self.Stats()
 
 
-    def to_file(self, path: str, template: str, data: Any):
+    def to_file(self, path: str, template: str, data: Any) -> None:
+        """TODO"""
+
         self._write_output_file(
             template_path=template,
             output_path=path,
@@ -177,7 +210,7 @@ class Outputs:
         self._stats.written_file_count += 1
 
 
-    def _write_output_file(self, template_path: str, output_path: str, data: Any):
+    def _write_output_file(self, template_path: str, output_path: str, data: Any) -> None:
         self._env.section_output_path = output_path
         self._env.section_data = None
 
@@ -193,7 +226,7 @@ class Outputs:
             f.write(s)
 
 
-    def _save_orphaned_sections(self, output_path: str):
+    def _save_orphaned_sections(self, output_path: str) -> None:
         if self._env.section_data is None:
             return
         
@@ -207,7 +240,7 @@ class Outputs:
             return
         
         cur_time = int(time.time()) 
-        fn = f"{output_path}.{cur_time}.orphan"
+        fn = f"{output_path}.{cur_time}.orphaned"
 
         with open(fn, 'w') as f:
             for name, data in self._env.section_data.items():
