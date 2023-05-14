@@ -7,8 +7,9 @@ includes:
 
 tasks:
   run:
+    desc: Run the generator
     cmds:
-      - task: snapi:build-snapi-lib-image
+      - task: snapi:build-snapi-pkg-image
       - cmd: >
           docker run -it --rm -v $(pwd):/app snapi
           python gen.py

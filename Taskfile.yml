@@ -5,6 +5,7 @@ vars:
 
 tasks:
   build-pip-tools-image:
+    desc: Build docker image with Python toolchain
     sources:
       - containers/pip-tools/Dockerfile
     cmds:
@@ -13,32 +14,31 @@ tasks:
       - cmd: docker build --rm -t {{.PIP_TOOLS_IMAGE}} -f containers/pip-tools/Dockerfile .
         silent: true
 
-  build-snapi-lib-image:
+  build-snapi-pkg-image:
+    desc: Build docker image with Python toolchain and snapi package
     sources:
-      - containers/snapi-lib/Dockerfile
+      - containers/snapi-pkg/Dockerfile
       - pkg/**/*
     cmds:
-      - cmd: echo "[+] Building snapi-lib image..."
+      - cmd: echo "[+] Building snapi image..."
         silent: true
-      - cmd: docker build --rm -t snapi -f containers/snapi-lib/Dockerfile .
+      - cmd: docker build --rm -t snapi -f containers/snapi-pkg/Dockerfile .
         silent: true
 
   pip-compile:
+    desc: Create or upgrade pinned requirements
     cmds:
-      - task: pip-tools-image
-      - cmd: >
-          docker run -it --rm -v $(pwd):/app/src {{.PIP_TOOLS_IMAGE}}
-          pip-compile --resolver backtracking -o pkg/requirements.txt pkg/pyproject.toml
-      - cmd: >
-          docker run -it --rm -v $(pwd):/app/src {{.PIP_TOOLS_IMAGE}}
-          pip-compile --extra dev --resolver backtracking -o pkg/requirements-dev.txt pkg/pyproject.toml
-
-  pip-compile-upgrade:
-    cmds:
-      - task: pip-tools-image
+      - task: build-pip-tools-image
       - cmd: >
           docker run -it --rm -v $(pwd):/app {{.PIP_TOOLS_IMAGE}}
           pip-compile -P --resolver backtracking -o pkg/requirements.txt pkg/pyproject.toml
       - cmd: >
           docker run -it --rm -v $(pwd):/app {{.PIP_TOOLS_IMAGE}}
           pip-compile -P --extra dev --resolver backtracking -o pkg/requirements-dev.txt pkg/pyproject.toml
+
+  shell:
+    cmds:
+      - task: build-snapi-pkg-image
+      - cmd: >
+          docker run -it --rm -v $(pwd):/app snapi
+          sh
