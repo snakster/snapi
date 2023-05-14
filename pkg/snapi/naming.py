@@ -9,7 +9,7 @@ from .errors import GeneratorError
 
 @dataclass
 class NestedType:
-    """TODO"""
+    """A type with nested inner types, i.e. Dict[str,str]."""
 
     name: str
     nested: List[Union[str, Any]]
@@ -29,13 +29,22 @@ class _TypeTokenScanner:
 
 
 def parse_type(s: str) -> Union[str, NestedType]:
-    """TODO"""
+    """Parse a type expression.
+    
+    A type expression can either be a simple type, or a nested type.
+    The syntax for nested types is OuterType<InnerType1, InnerType2,...>.
+
+    Example: Map<str,List<Tuple<str,str,str>>>"""
     
     return _parse_type_expr(_TypeTokenScanner(s))
 
 
 def convert_type(s: str, mapper, delims: Tuple[str,str]) -> str:
-    """TODO"""
+    """Parse a type expression and substitute type names with the given mappper.
+    
+    Example:
+    - In:  map<string,vector<tuple<string,string,string>>>
+    - Out: Dict[str,List[Tuple[str,str,str]]]"""
 
     if isinstance(mapper, dict):
         type_map = mapper
