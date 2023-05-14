@@ -21,7 +21,8 @@ class Generator:
         self,
         section_delim = None,
         save_orphaned_sections = True,
-        filters = None
+        filters = None,
+        logger = logging.LogFormat.PRETTY
     ):
         self.save_orphaned_sections = save_orphaned_sections
 
@@ -31,7 +32,10 @@ class Generator:
 
         self._template_env = template.make_new_env(section_delim, filters)
 
-        self.log = logging.Logger()
+        if isinstance(logger, logging.LogFormat):
+            self.log = logging.Logger(logging.LogFormat.PRETTY)
+        else:
+            self.log = logger
 
 
     def add_inputs(
@@ -115,7 +119,7 @@ class Generator:
             if not name in in_cache:
                 with logging.Scope(self.log, name):
                     in_cache[name], stats = process_in_decl(decl)
-                    self.log.info(f"[green]{stats.read_file_count}[/green] read")
+                    self.log.info(f"{stats.read_file_count} files read")
 
         def process_tr_decl(decl):
             impl = decl["impl"]
@@ -150,7 +154,7 @@ class Generator:
         for name, decl in self._output_decls.items():
             with logging.Scope(self.log, name):
                 stats = process_out_decl(decl)
-                self.log.info(f"[green]{stats.written_file_count}[/green] written")
+                self.log.info(f"{stats.written_file_count} files written")
 
 
 class Inputs:
@@ -161,7 +165,7 @@ class Inputs:
         read_file_count: int = 0
 
 
-    def __init__(self, log: logging.Logger):
+    def __init__(self, log: logging.ILogger):
         self.log = log
         self._data = {}
         self._stats = self.Stats()
@@ -192,7 +196,7 @@ class Outputs:
         written_file_count: int = 0
 
 
-    def __init__(self, log: logging.Logger, with_save_orphans: bool, env):
+    def __init__(self, log: logging.ILogger, with_save_orphans: bool, env):
         self.log = log
         self._with_save_orphans = with_save_orphans
         self._env = env
