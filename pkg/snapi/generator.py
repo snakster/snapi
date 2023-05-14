@@ -172,7 +172,8 @@ class Inputs:
 
 
     def from_file(self, path: str) -> None:
-        """TODO"""
+        """Read input data from file."""
+
         self._data[path] = self._read_input_file(path)
         self._stats.read_file_count += 1
 
@@ -204,7 +205,7 @@ class Outputs:
 
 
     def to_file(self, path: str, template: str, data: Any) -> None:
-        """TODO"""
+        """Generate output file from template with substituted data."""
 
         self._write_output_file(
             template_path=template,
