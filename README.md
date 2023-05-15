@@ -4,11 +4,26 @@ snapi (/sneɪ.piˈaɪ/) is a simple yet flexible code generation framework. It u
 
 ### Why?
 
+The general use case for this framework is to create code generation pipelines, where
+* inputs are abstract, single-source-of-truth API definitions, and
+* outputs are files with boilerplate code based on these inputs.
+
 Here are some scenarios where an abstract API definition + code generation might be a good idea:
-* Function declarations that are repeated multiple times, i.e. for interface, implementation, testing mocks, ...
+* Function declarations that are repeated multiple times, i.e. for interfaces, implementations, tests, ...
 * Boilerplate wrappers that forward or convert between layers of an architecture
 * SDKs for multiple programming languages using the same general API
 * Semantic checks on API changes that require an easy to parse definition, i.e. to programmatically test for backward compatibility
+
+Other existing code generators may require writing no code at all, but they often only produce specific outputs, and extending them is not always easy.
+For these scenarios, the goal of snapi is to make writing a custom generator as easy as possible.
+
+### Features
+
+* Simple, opinionated framework to define inputs, processing steps and outputs
+* [Jinja2](https://jinja.palletsprojects.com/en/3.0.x/templates/) integration for templates, with extension to mix generated and non-generated code in the same file
+* Caching of re-used data
+* Facilities for logging
+* Useful utilities for naming conversions between multiple programming languages
 
 ### Development status
 
