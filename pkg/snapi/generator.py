@@ -1,17 +1,16 @@
 """The main generator class and supporting definitions."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 from collections.abc import Callable
 
 from dataclasses import dataclass
 
 import os
-import yaml
-import json
 import time
 
 from . import logging, template
 from .errors import GeneratorError
+from .inputs import Inputs
 
 
 class Generator:
@@ -97,7 +96,7 @@ class Generator:
 
         if len(self._input_decls) == 0:
             raise GeneratorError("no inputs declared")
-        
+
         if len(self._transformer_decls) == 0:
             raise GeneratorError("no transformers declared")
         
@@ -155,38 +154,6 @@ class Generator:
             with logging.Scope(self.log, name):
                 stats = process_out_decl(decl)
                 self.log.info(f"{stats.written_file_count} files written")
-
-
-class Inputs:
-    """Context passed to input delegate functions."""
-
-    @dataclass
-    class Stats:
-        read_file_count: int = 0
-
-
-    def __init__(self, log: logging.ILogger):
-        self.log = log
-        self._data = {}
-        self._stats = self.Stats()
-
-
-    def from_file(self, path: str) -> None:
-        """Read input data from file."""
-
-        self._data[path] = self._read_input_file(path)
-        self._stats.read_file_count += 1
-
-
-    def _read_input_file(self, path: str) -> Any:
-        if path.endswith(".json"):
-            with open(path, 'r') as f:
-                return json.load(f)
-        elif path.endswith((".yaml", ".yml")):
-            with open(path, 'r') as f:
-                return yaml.safe_load(f)
-        else:
-            return None
 
 
 class Outputs:

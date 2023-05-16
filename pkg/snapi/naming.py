@@ -1,6 +1,6 @@
 """Utilities for common, naming-related text transformations."""
 
-from typing import Any, Dict, Union, List, Tuple
+from typing import Any, Union, List, Tuple
 from dataclasses import dataclass
 
 import re

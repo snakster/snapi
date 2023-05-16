@@ -19,7 +19,7 @@ def main():
         name="api_spec",
         impl=read_specs,
         args={
-            "spec_dir": "spec"
+            "dir_path": "spec"
         }
     )
 
@@ -42,8 +42,8 @@ def main():
     g.run()
 
 
-def read_specs(inputs: snapi.Inputs, spec_dir: str):
-    for root, dirs, files in os.walk(spec_dir):
+def read_specs(inputs: snapi.Inputs, dir_path: str):
+    for root, dirs, files in os.walk(dir_path):
         for p in files:
             if p.endswith(".yml"):
                 inputs.from_file(os.path.join(root, p))

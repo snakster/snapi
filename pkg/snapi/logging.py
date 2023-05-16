@@ -148,5 +148,3 @@ class JSONFormatter():
             t["scope"] = self._logger._cur_scope
         
         print(json.dumps(t))
-
-
